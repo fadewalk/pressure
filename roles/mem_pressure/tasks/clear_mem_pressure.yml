@@ -1,0 +1,8 @@
+---
+- name: Run clear mem pressure command
+  shell: '{{ item }}'
+  with_items:
+    - 'pkill -9 memtester || exit 0'
+    - 'pkill -9 memtester || exit 0'
+    - 'pkill -9 memtester || exit 0'
+    - 'pkill -9 memtester || exit 0'

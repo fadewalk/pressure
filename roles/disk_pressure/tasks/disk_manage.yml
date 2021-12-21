@@ -1,0 +1,8 @@
+---
+#- name: Installed base pkg
+#  yum: name=gdisk state=present
+#  tags: disk_manage
+
+- name: Copy disk clean scripts
+  template: src=disk_clean.sh dest=/tmp/disk_clean.sh
+  tags: disk_manage

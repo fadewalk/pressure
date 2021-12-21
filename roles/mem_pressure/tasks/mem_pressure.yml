@@ -1,0 +1,31 @@
+---
+- name: Base packages install
+  yum: name={{ item }} state=present
+  with_items:
+    - sysstat
+    - bc
+    - psmisc
+    - gcc
+    - gcc-c++
+
+- name: Copy the mem pressure test related software
+  copy: src=memtester-4.2.2.tar.gz dest=/tmp/ mode=644
+
+- name: Copy the mem pressure test related scripts
+  template: src=pressure_test_all.sh dest=/tmp/ mode=655
+
+- name: Tar memtester-4.2.2.tar.gz file
+  unarchive: src=/tmp/memtester-4.2.2.tar.gz dest=/tmp/ copy=no
+
+- name: Install memtester
+  shell: creates=/sbin/memtester sh /tmp/pressure_test_all.sh mem_pressure_install
+
+- name: Run Memory pressure test scripts
+  shell: sh /tmp/pressure_test_all.sh mem_pressure
+
+- name: clear mem pressure test related file
+  file: path={{ item }} state=absent
+  with_items:
+    - '/tmp/memtester-4.2.2.tar.gz'
+    - '/tmp/memtester-4.2.2'
+    - '/tmp/pressure_test_all.sh'

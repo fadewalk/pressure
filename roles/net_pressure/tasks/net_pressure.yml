@@ -1,0 +1,49 @@
+---
+- name: Base packages install
+  yum: name={{ item }} state=present
+  with_items:
+    - bc
+    - iperf
+
+- name: Config iperf server iptables rule
+  iptables: action=insert chain=INPUT protocol=tcp destination_port=5001 jump=ACCEPT
+
+- name: Get remote host pressure ip
+  shell: "hostname -I|xargs -n 1|grep '{{ net_segment }}'|head -1"
+  register: network_pressure_ip
+  ignore_errors: True
+
+- name: Create network_pressure_all_ip.txt file
+  file: path={{ item.path }} state={{ item.state }}
+  with_items:
+    - { path: '/tmp/network_pressure_all_ip.txt', state: 'absent' }
+    - { path: '/tmp/network_pressure_all_ip.txt', state: 'touch' }
+
+- name: Insert all ip list to network_pressure_all_ip.txt
+  lineinfile:
+    path: /tmp/network_pressure_all_ip.txt
+    line: '{{ hostvars[item].ansible_all_ipv4_addresses }}'
+    state: present
+  with_items: '{{ ansible_play_hosts }}'
+
+- name: Get all ip list to /tmp/network_pressure_all_ip.txt
+  shell: sed -i "s#\[##g" /tmp/network_pressure_all_ip.txt && sed -i "s#]##g" /tmp/network_pressure_all_ip.txt && sed -i "s#,##g" /tmp/network_pressure_all_ip.txt && sed -i "s#'##g" /tmp/network_pressure_all_ip.txt
+
+- name: Get all iperf client ip list
+  shell: "cat /tmp/network_pressure_all_ip.txt|xargs -n 1|grep {{ net_segment }}|xargs"
+  register: network_pressure_all_ip
+
+- name: Copy network pressure related script
+  template: src=pressure_test_all.sh dest=/tmp/pressure_test_all.sh mode=655
+
+- name: Run iperf server
+  shell: sh /tmp/pressure_test_all.sh iperf_server
+
+- name: Run iperf client
+  shell: sh /tmp/pressure_test_all.sh iperf_client
+
+- name: Del network pressure related file
+  file: path=/tmp/pressure_test_all.sh state=absent
+  with_items:
+    - '/tmp/pressure_test_all.sh'
+    - '/tmp/network_pressure_all_ip.txt'

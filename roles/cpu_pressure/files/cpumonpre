@@ -1,0 +1,32 @@
+#!/bin/bash
+interval_time="40"
+logs_dir="/var/log/cpumon.log"
+
+if [ ! -n $1 ]; then
+   echo "Use: Please set cpu ilde num "
+   exit 0
+fi
+
+if [ "$1" -gt 0 ] 2>/dev/null ;then
+    echo &>/dev/null
+else
+    echo "The parameter you entered is not an integer .."
+    exit 0
+fi
+
+while true
+do
+    data_time=$(date +%F_%T)
+    cpu_ilde_vars=$(mpstat -P ALL 1 $interval_time|grep Average|grep all |awk '{print $NF}'|awk -F "." '{print $1}')
+    ((cpu_pressure_vars=100 - $cpu_ilde_vars))
+    if [ $cpu_pressure_vars -gt $1 ] ;then
+        pkill -KILL pressure &>/dev/null
+        pkill -KILL pressure &>/dev/null
+        pkill -KILL pressure &>/dev/null
+        echo "$data_time $cpu_pressure_vars cpu pressure down is [ ok ]" >> $logs_dir
+    else
+        echo &>/dev/null
+#        echo "$data_time $cpu_pressure_vars cpu pressure check is [ accpet ]" >> $logs_dir
+    fi
+    sleep 1
+done

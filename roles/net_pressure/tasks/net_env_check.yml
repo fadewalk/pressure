@@ -1,0 +1,65 @@
+---
+- name: Get network name
+  shell: 'ip addr|grep {{ check_net_name }}|wc -l'
+  register: network_name
+  ignore_errors: True
+
+- name: Get network connection status network
+  shell: 'ping -c 3 {{ check_net_segment }}.{{ check_test_ping_ip }} &>/dev/null && echo OK'
+  register: network_connection_status_network
+  ignore_errors: True
+
+- name: Get network connection status internet
+  shell: 'ping -c 3 {{ check_net_internet }} &>/dev/null && echo OK'
+  register: network_connection_status_internet
+  ignore_errors: True
+
+- name: Get network ip
+  shell: 'hostname -I|xargs -n 1|grep "{{ check_net_segment }}"|xargs'
+  register: network_ip
+  ignore_errors: True
+
+- name: Get network ip count
+  shell: 'hostname -I|xargs -n 1|grep "{{ check_net_segment }}"|wc -l'
+  register: network_ip_count
+  ignore_errors: True
+
+- name: Get network ip speed
+  shell: ethtool {{ check_net_name }}|grep Speed|awk '{print $2}'|awk -F "M" '{print $1}'
+  register: network_ip_speed
+  ignore_errors: True
+
+- name: Get network ip mtu
+  shell: 'cat /sys/class/net/{{ check_net_name }}/mtu'
+  register: network_ip_mtu
+  ignore_errors: True
+
+- name: Check_01 network name
+  debug:
+    msg: 'NO find network name {{ check_net_name }} please check network name'
+  when: network_name.stdout == '0'
+
+- name: Check_02 network connection status network
+  debug:
+    msg: 'Test ping gateway {{ check_net_segment }}.{{ check_test_ping_ip }} is failed'
+  when: network_connection_status_network.stdout != 'OK'
+
+- name: Check_03 network connection status internet
+  debug:
+    msg: 'Test ping {{ check_net_internet }} is failed'
+  when: network_connection_status_internet.stdout != 'OK'
+
+- name: Check_04 network ip count == 1 True
+  debug:
+    msg: 'Now net_ip != 1  info: {{ network_ip.stdout }} Should be set ip 1'
+  when: network_ip_count.stdout != '1'
+
+- name: Check_05 network ip speed
+  debug:
+    msg: 'Now net_speed: {{ network_ip_speed.stdout }}  Should be set to: {{ check_net_speed }}'
+  when: network_ip_speed.stdout != check_net_speed
+
+- name: Check_06 network ip mtu
+  debug:
+    msg: 'Now net_mtu: {{ network_ip_mtu.stdout }}  Should be set to: {{ check_net_mtu }}'
+  when: network_ip_mtu.stdout != check_net_mtu

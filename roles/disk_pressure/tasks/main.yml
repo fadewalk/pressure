@@ -1,0 +1,4 @@
+---
+- include: disk_manage.yml
+- include: disk_pressure.yml
+  tags: disk_pressure

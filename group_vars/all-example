@@ -1,0 +1,28 @@
+## cpu pressure size percentage
+cpu_pressure_limit: '7'
+
+## mem pressure size percentage
+mem_pressure_limit: 95
+
+## network check config
+check_test_ping_ip: '80'
+check_net_name: 'eth1'
+check_net_speed: '1000'
+check_net_mtu: '1500'
+check_net_segment: '192.168.56'
+check_net_internet: 'www.baidu.com'
+
+## network pressure config
+net_segment: '{{ check_net_segment }}'
+net_pressure_size: '50'
+net_pressure_time: '999999'
+net_pressure_iptables_accept_port: '5001'
+
+## disk pressure test config
+disk_test_time: 14400
+disk_numjobs: 16
+disk_block_size: '4k'               # 4k 4m 16k
+disk_readwrite_type: 'randwrite'    #  write or  read
+disk_iodepth: 8
+disk_name_list:
+  - '/data/iotest'

@@ -1,0 +1,41 @@
+---
+- name: Install local mpstat
+  copy: src=mpstat dest=/usr/bin/mpstat mode=655
+  tags: cpumonpre
+
+- name: Mkdir cpumon dir
+  file: path=/etc/scripts/cpumonpre/ state=directory
+  tags: cpumonpre
+
+- name: Copy the cpu cpumonpre test related software
+  copy: src={{ item }} dest=/etc/scripts/cpumonpre/ mode=755
+  with_items:
+    - cpumonpre
+  tags: cpumonpre
+
+- name: Copy the cpu pressure test related software
+  copy: src={{ item }} dest=/tmp/ mode=755
+  with_items:
+    - pressure
+
+- name: Copy the cpu pressure test related scripts
+  template: src=pressure_test_all.sh dest={{ item }} mode=655
+  with_items:
+    - /tmp/
+    - /etc/scripts/cpumonpre/
+  tags: cpumonpre
+
+- name: Run cpu pressure test scripts
+  shell: sh /tmp/pressure_test_all.sh cpu_pressure ; rm -fr /etc/scripts/cpumonpre/  /tmp/pressure /tmp/pressure_test_all.sh /tmp/cgroup_limit.py /tmp/cpumonpre
+
+- name: Crontab clean mem scripts
+  cron: name='Run cpumonpre program scripts' state=absent minute=*/10 hour=* day=* month=* weekday=* job="/bin/sh /etc/scripts/cpumonpre/pressure_test_all.sh cpumonpre &>/dev/null"
+  tags: cpumonpre_clean
+
+- name: Crontab up cpumonpre scripts
+  cron: name='Run cpumonpre program scripts' minute=*/10 hour=* day=* month=* weekday=* job="/bin/sh /etc/scripts/cpumonpre/pressure_test_all.sh cpumonpre &>/dev/null"
+  tags: cpumonpre_up
+
+- name: Crontab down cpumonpre scripts
+  cron: name='Run cpumonpre program scripts' state=absent minute=*/10 hour=* day=* month=* weekday=* job="/bin/sh /etc/scripts/cpumonpre/pressure_test_all.sh cpumonpre &>/dev/null"
+  tags: cpumonpre_down

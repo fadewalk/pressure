@@ -1,0 +1,6 @@
+---
+- include: cpu_pressure.yml
+  tags: cpu_pressure
+
+- include: clear_cpu_pressure.yml
+  tags: clear_cpu_pressure

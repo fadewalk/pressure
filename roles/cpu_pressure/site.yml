@@ -1,0 +1,4 @@
+- hosts: '{{ nodes }}'
+  gather_facts: false
+  roles:
+    - cpu_pressure

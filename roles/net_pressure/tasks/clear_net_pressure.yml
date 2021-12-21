@@ -1,0 +1,13 @@
+---
+- name: Run clear net pressure command
+  shell: '{{ item }}'
+  with_items:
+    - 'pkill -9 iperf || exit 0'
+    - 'pkill -9 iperf || exit 0'
+    - 'pkill -9 iperf || exit 0'
+    - 'pkill -9 iperf || exit 0'
+
+- name: Config iperf server iptables rule
+  iptables: action=insert chain=INPUT protocol=tcp destination_port={{ item }} jump=ACCEPT state=absent
+  with_items:
+    - "{{ net_pressure_iptables_accept_port }}"

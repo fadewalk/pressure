@@ -1,0 +1,16 @@
+- name: Copy the cpu pressure test related scripts
+  copy: src=cgroup_limit.py dest=/tmp/ mode=655
+  tags: clear_pressure_cpu
+
+- name: Run clear cpu pressure command
+  shell: '{{ item }}'
+  with_items:
+    - '/tmp/cgroup_limit.py  cpu -C -p `pgrep pressure` || exit 0'
+    - 'pkill -9 pressure || exit 0'
+    - 'pkill -9 pressure || exit 0'
+    - 'pkill -9 pressure || exit 0'
+    - 'pkill -9 pressure || exit 0'
+
+- name: clear cpu pressure test related file
+  file: path=/tmp/cgroup_limit.py state=absent
+  tags: clear_pressure_cpu
